@@ -13,7 +13,7 @@
 [CmdletBinding()]
 param(
     [string]$GameDir = "D:\Steam\steamapps\common\Slots and Daggers",
-    [string]$OutDir  = (Join-Path $PSScriptRoot "sd_extract"),
+    [string]$OutDir  = "",                # default: .\sd_extract next to this script
     [switch]$SkipTools,          # only inventory + bundle, no downloads/decompile
     [int]$MaxBundleMB = 40       # cap for ALL_SOURCE.txt
 )
@@ -22,6 +22,11 @@ $ErrorActionPreference = "Stop"
 $ProgressPreference    = "SilentlyContinue"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+# $PSScriptRoot is empty inside param() defaults on Windows PowerShell 5.1.
+if (-not $OutDir) {
+    $base = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
+    $OutDir = Join-Path $base "sd_extract"
+}
 if (-not (Test-Path $GameDir)) { throw "Game directory not found: $GameDir" }
 $GameDir = (Resolve-Path $GameDir).Path
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
